@@ -1,0 +1,79 @@
+{% from "_base_styles.html" import base_styles, site_footer %}
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Targets · Admin</title>
+{{ base_styles() }}
+</head><body>
+<div class="header"><div class="header-inner">
+  <div><h1>Set / Change Targets</h1><div class="sub">Per-village farmer-ID targets. Overridden rows are shaded.</div></div>
+  <div class="nav">
+    <a href="{{ url_for('admin_home') }}">← Admin</a>
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </div>
+</div></div>
+<div class="container">
+  {% if saved %}<div class="ok">✓ Saved. Render will redeploy in 1–2 minutes with the new targets.</div>{% endif %}
+  {% if error %}<div class="err">⚠ {{ error }}</div>{% endif %}
+
+  <div class="card">
+    <p>Edit the <b>Target</b> for any village. If villages appear in CSV uploads that aren't in defaults, they're highlighted in orange at the top — fill a target for each one you want to track. Use the <b>Add new village</b> row at the bottom to add a village that hasn't appeared in any CSV yet.</p>
+    <form method="POST">
+
+      {% if unknown %}
+      <h3 style="margin:8px 0 10px 0;color:#a86416;font-size:14px">⚠ Villages seen in CSVs with no target yet ({{ unknown|length }})</h3>
+      <table class="admin" style="margin-bottom:20px">
+        <thead>
+          <tr><th>#</th><th>Tehsil</th><th>Village</th><th style="text-align:right">Target</th></tr>
+        </thead>
+        <tbody>
+          {% for u in unknown %}
+          <tr style="background:#fff8ee">
+            <td>{{ loop.index }}</td>
+            <td>{{ u.tehsil }}</td>
+            <td><strong>{{ u.village }}</strong></td>
+            <td style="text-align:right"><input class="target-input" type="number" min="0" name="unknown_target::{{ u.key }}" placeholder="(no target)"></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      <h3 style="margin:8px 0 10px 0;color:#1a3a5c;font-size:14px">All villages ({{ rows|length }})</h3>
+      <table class="admin">
+        <thead>
+          <tr><th>#</th><th>Tehsil</th><th>Village</th><th style="text-align:right">Default</th><th style="text-align:right">Target</th><th>&nbsp;</th></tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr class="{{ 'override' if r.overridden else '' }}">
+            <td>{{ loop.index }}</td>
+            <td>{{ r.tehsil }}</td>
+            <td><strong>{{ r.village }}</strong></td>
+            <td style="text-align:right;color:#888">{{ r.default }}</td>
+            <td style="text-align:right">
+              <input class="target-input" type="number" min="0" name="target::{{ r.key }}" value="{{ r.current }}">
+            </td>
+            <td>{% if r.added %}<span style="color:#2a6b35;font-size:11px">added</span>{% elif r.overridden %}<span style="color:#a86416;font-size:11px">overridden</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+          <tr style="background:#eef5fb; border-top:2px solid #c7d6ea">
+            <td style="font-weight:700;color:#305496">+</td>
+            <td><input type="text" name="new_tehsil" placeholder="Tehsil (e.g. Sumbal)" style="width:100%"></td>
+            <td><input type="text" name="new_village" placeholder="Village name" style="width:100%"></td>
+            <td style="text-align:right;color:#888;font-size:11px">(new)</td>
+            <td style="text-align:right"><input class="target-input" type="number" min="0" name="new_target" placeholder="0"></td>
+            <td><span style="color:#305496;font-size:11px">Add new village</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top: 18px; display: flex; gap: 10px;">
+        <button type="submit" class="submit">Save all targets</button>
+        <a href="{{ url_for('admin_home') }}" style="padding:10px 18px;color:#556;text-decoration:none;font-size:14px">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{{ site_footer() }}
+</body></html>
